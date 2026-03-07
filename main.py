@@ -1,26 +1,16 @@
-import requests
-import json
-from retry_dec import retry
+from fetch_rick_and_morty import fetch_all_characters
+from get_connection import get_db_connection
 
-@retry(attempts=3, delay=2)
-def fetch_page(url):
-    response = requests.get(url)
-    if not response.ok:
-        raise Exception(f"API returned {response.status_code}")
-    return response.json()
+def main():
+    characters = fetch_all_characters()
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.executemany(
+            'INSERT INTO personal_project_1 (id, name, status, species) VALUES (%s, %s, %s, %s)',
+            [(character['id'], character['name'], character['status'], character['species']) for character in characters]
+            )
+        conn.commit()
 
-def fetch_all_characters():
-    all_characters = []
-    keys = ['id', 'name', 'status', 'species']
-    page = 1
-
-    while True:
-        data = fetch_page(f'https://rickandmortyapi.com/api/character/?page={page}')
-        results = data.get('results')
-        if not results:
-            break
-        for character in results:
-            all_characters.append({k: character.get(k, None) for k in keys})
-        page += 1
-
-    return all_characters
+if __name__ == '__main__':
+    main()
+    
