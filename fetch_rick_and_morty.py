@@ -2,9 +2,10 @@ import requests
 import json
 from retry_dec import retry
 import time
+import logging
 
 @retry(attempts=3, delay=2)
-def fetch_page(url):
+def fetch_page(url:str):
     response = requests.get(url)
     if response.status_code == 404:
         return {"results": None}

@@ -1,4 +1,6 @@
 import time
+import logging
+logger = logging.getLogger(__name__)
 def retry(attempts=2, delay=2):
     def decorator(function):
         def wrapper(*args, **kwargs):
@@ -10,7 +12,7 @@ def retry(attempts=2, delay=2):
                     return function(*args, **kwargs)
                 except Exception as e:
                     last_error = e
-                    print(f"function failed, trying again: {e}")
+                    logger.info((f"function failed, trying again: {e}"))
                     time.sleep(current_delay)
                     current_delay *= 2
                     attempt += 1
